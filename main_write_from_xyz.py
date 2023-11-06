@@ -10,7 +10,7 @@ import time,datetime
 import json
 import argparse
 from pymatgen.core import Element
-import glob
+from glob import glob
 import sys
 import toml
 from tqdm import tqdm
@@ -75,14 +75,15 @@ def main():
     # path='/gpfs/projects/FrenkelGroup/kaif/FDMNES_cal/shape_proj/test_1_100_oblate/'
     xyzinp=glob("input/*.xyz")
     template_dir=config['template_dir']
-    if not os.path.exists("FDMNES_inp"):
-           os.mkdir("FDMNES_inp")
+    if not os.path.exists("FDMNESinp"):
+           os.mkdir("FDMNESinp")
     else:
-           shutil.rmtree("FDMNES_inp")
-           os.mkdir("FDMNES_inp")
-    for i in tqdm(range(len(xyzinp)),total=len(xyzinp),desc=f"writing {xyzinp[i].split('/')[-1]}..."):
+           shutil.rmtree("FDMNESinp")
+           os.mkdir("FDMNESinp")
+    j=0
+    for i in tqdm(range(len(xyzinp)),total=len(xyzinp),desc=f"writing {xyzinp[j].split('/')[-1]}..."):
         write_FDMNESinp(template_dir,xyzinp[i],config['Absorber'],site=None)  
-
+        j+=1
     
 if __name__ == '__main__':
     main()
