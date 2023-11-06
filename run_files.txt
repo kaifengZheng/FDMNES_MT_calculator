@@ -1,0 +1,3 @@
+FDMNESinp/COC_O3_cut_ori_100_l_1_2.inp
+FDMNESinp/COC_O2_3.inp
+FDMNESinp/COC_O1_cut_ori_100_l_1_0.inp

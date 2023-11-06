@@ -29,12 +29,12 @@ from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='calculation configuration')
 parser.add_argument('-np','--ncores',type=int,help="number of cores")
-parser.add_argument('-in','--inputfile',type=int,help="index of specific input file")
+parser.add_argument('-in','--inputfile',type=str,help="specific input file name")
 parser.add_argument('--hostfile',type=str,help="The location of hostfile")
 parser.add_argument('--host',type=int,help="assign specific host to run the program")
 args = parser.parse_args()
 ncores = args.ncores
-ind = args.inputfile
+input_file = args.inputfile
 hostname=args.hostfile
 host_ind=args.host
 config = toml.load('config.toml')
@@ -59,10 +59,10 @@ def write_FDMNESinp(template_dir,pos_filename,CA,radius,site=None):
         else:
             f.write("absorber")
             f.write(f"{site}\n\n")
-        f.write('Molecule')
-        f.write("1   1   1   90   90   90")
+        f.write('Molecule\n')
+        f.write("1   1   1   90   90   90\n")
         for i in range(len(atoms)):
-            f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}")
+            f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}\n")
         f.write('\n')
         f.write("END\n")
     return f"FDMNES_inp/{title}.inp",title
@@ -87,12 +87,13 @@ class FDMNES_cal:
         self.scratch_path=config['scratch_path']#place to run the calculation
         self.exe_path=config['exe_path'] #place stored the executable file
         self.cleanup=config['cleanup'] #whether to delete the scratch folder after calculation
-        self.cores=config['cores'] #number of cores to run the calculation
-        self.tasks=config['tasks'] #tasks to run
-        self.mpi_cmd=f"mpirun -np {self.cores}" #mpi command
+        self.mpi_cmd=f"mpirun -np {ncores}" #mpi command
+        self.fdmnes_inp=config["fdmnes_inp"]
+        self.hostfile=config["hostfile"]
+        self.filename=config["file"]
 
 #def fdmnes_calculator_mpi(js,node):
-    def fdmnes_calculator_mpi(config,ncores,host_ind):
+    def fdmnes_calculator_mpi(self):
 
         '''
         # USAGE:
@@ -113,43 +114,32 @@ class FDMNES_cal:
         #     mpirun_cmd = js['mpirun_cmd']
         # except:
         #     mpirun_cmd = '/opt/intel/oneapi/mpi/2021.5.1/bin/mpirun'
-        
-        try:
-            exe_path = js['exe_path']
-        except:
-            exe_path = '/gpfs/home/kaifzheng/software/parallel_fdmnes'
-
-        try:
-            cleanup = js['cleanup']
-        except:
-            cleanup = 'true'
             
         
         
         
         try:
 
-            os.chdir(fdmnes_scratch_path)
+            os.chdir(self.scratch_path)
             uid = 'fdmnes_'+''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=10))
             os.makedirs(uid,exist_ok=True)
             os.chdir(uid)
             
-            print('Running FDMNES calculation at \n %s/%s \n using %d cores\n'%(fdmnes_scratch_path,uid,ncores))
-            
+            print('Running FDMNES calculation at \n %s/%s \n using %d cores\n'%(self.scratch_path,uid,ncores))
             fi = open("fdmnes.inp", "w")
-            for ii in js['fdmnes_inp']:
+            for ii in self.fdmnes_inp:
                 fi.write(ii)
             fi.close()
             
 
-            try:
-                js['cif']
-                cif = open("structure.cif", "w")
-                for cc in js['cif']:
-                    cif.write(cc)
-                cif.close()
-            except:
-                pass
+           # try:
+           #     js['cif']
+           #     cif = open("structure.cif", "w")
+           #     for cc in js['cif']:
+           #         cif.write(cc)
+           #     cif.close()
+           # except:
+           #     pass
             
 
 
@@ -160,8 +150,8 @@ class FDMNES_cal:
             fi.write('1\n')
             fi.write('fdmnes.inp\n')
             fi.close()          
-            fi = open("hostfile","w")
-            for hh in js['hostfile']:
+            fi = open("hostname","w")
+            for hh in self.hostfile:
                 fi.write(hh)
             fi.close()
             exe_list = [
@@ -172,10 +162,10 @@ class FDMNES_cal:
 
             begin_time = time.time()
             
-            host = js["hostfile"][host_ind][:-1]
+            host = self.hostfile[host_ind][:-1]
             print(host)
             for e in exe_list:
-                _ = subprocess.run(['HOST_NUM_FOR_MUMPS=4 bash %s/%s -np %d --hostfile %s --host %s >> fdmnes.out ' %(exe_path,e,ncores,'hostfile',host)],shell=True)
+                _ = subprocess.run(['HOST_NUM_FOR_MUMPS=4 bash %s/%s -np %d --hostfile %s --host %s >> fdmnes.out ' %(self.exe_path,e,ncores,'hostname',host)],shell=True)
                 print(_)
                 #_ = subprocess.run(['srun -n %d %s/%s >> fdmnes.out' %(ncores,exe_path,e)],shell=True)
             # _ = subprocess.run(['srun --nodelist=%s -N 1 -n %d %s/%s >> fdmnes.out' %(node,ncores,exe_path,e)],shell=True)
@@ -198,6 +188,9 @@ class FDMNES_cal:
                 fdmnesbav = f.readlines()
 
             js = {
+                'filename':self.filename,
+                "ncores":ncores,
+                "node":host,
                 'start_time': datetime.datetime.fromtimestamp(start_time).strftime('%Y-%m-%d__%H:%M:%S'),
                 'finish_time': datetime.datetime.fromtimestamp(finish_time).strftime('%Y-%m-%d__%H:%M:%S'),
                 'time_elapsed': finish_time - start_time,
@@ -205,7 +198,7 @@ class FDMNES_cal:
                 'fdmnesout': fdmnesout,
                 'fdmnesbav': fdmnesbav,
                 'ncores': ncores,
-                'exe_path': exe_path,
+                'exe_path': self.exe_path,
                 }            
                 
 
@@ -292,7 +285,7 @@ class FDMNES_cal:
 
             os.chdir('..')
 
-            if cleanup == 'true':
+            if self.cleanup == 'true':
                 shutil.rmtree(uid)
                 
                 
@@ -324,25 +317,33 @@ class FDMNES_cal:
         
 def main(): 
     # path='/gpfs/projects/FrenkelGroup/kaif/FDMNES_cal/shape_proj/test_1_100_oblate/'
-    if config['temp_path'][-1]!='/':
-        path=config['temp_path']+config['foldername']
+    pathlen = 10
+    if config['path'][-1]!='/':
+        run_dir=config['path']+'/'
     else:
-        path=config['temp_path']+'/'+config['foldername']
-    os.chdir(path)
+        run_dir=config['path']
+    os.chdir(run_dir)
+    if not os.path.exists("js"):
+           os.mkdir("js")
+    #else:
+    #       shutil.rmtree("FDMNESinp")
+    #       os.mkdir("FDMNESinp")
 
-    input_files=glob.glob("input/*.inp")
-    with open(input_files[ind]) as fi:
+
+    # input_files=glob.glob("input/*.inp")
+    with open(input_file) as fi:
         fdmnesinp = fi.readlines()
     with open(hostname) as fi:
         hn=fi.readlines() 
-    js_in  = {'fdmnes_inp': fdmnesinp,"hostfile":hn,'cleanup':'false'}        
+    config["file"]=input_file
+    config["fdmnes_inp"]=fdmnesinp 
+    config["hostfile"]=hn
 
-    print(f"Running calculation using {input_files[ind]}")
-    js_out =fdmnes_calculator_mpi(js_in,ncores,host_ind)
+    print(f"Running calculation using {input_file}")
+    js_out =FDMNES_cal(config).fdmnes_calculator_mpi()
 
-    os.chdir(path)
-    pathlen = 6
-    with open(path+'js/js_'+input_files[ind][pathlen:-4]+'.json', 'w') as f:
+    os.chdir(run_dir)
+    with open(run_dir+'js/js_'+input_file[pathlen:-4]+'.json', 'w') as f:
         json.dump(js_out, f)
     
 if __name__ == '__main__':

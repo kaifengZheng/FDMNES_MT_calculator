@@ -44,13 +44,13 @@ def write_FDMNESinp(template_dir,pos_filename,CA,site=None):
         f.writelines(template)
         f.write('\n\n')
         if site == None:
-            f.write("Z_absorber")
+            f.write("Z_absorber\n")
             f.write(f"{atomic_num}\n\n")
         else:
-            f.write("absorber")
+            f.write("absorber\n")
             f.write(f"{site}\n\n")
-        f.write('Molecule')
-        f.write("1   1   1   90   90   90")
+        f.write('Molecule\n')
+        f.write("1   1   1   90   90   90\n")
         for i in range(len(atoms)):
             f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}\n")
         f.write('\n')
@@ -70,24 +70,57 @@ def read_xyz(filename):
         atoms.append(atom)
         coords.append([float(x),float(y),float(z)])
     return atoms,coords
+
+def read_json(filename):
+    with open(filename) as f:
+        data = json.load(f)
+    return data
+
+def restart():
+    readfiles=glob(f"FDMNESinp/*.inp")
+    readout=glob(f"js/*.json")
+    out = []
+    input = []
+    for str1 in readout:
+        out.append(str1.split('/')[1].split('.')[0])
+    for i in range(len(readfiles)):
+        if readfiles[i].split('/')[1].split('.')[0] in out:
+            data=read_json(f"js/{readfiles[i].split('/')[1].split('.')[0]}.json")
+            try:
+                data["mu_conv"]
+            except:
+                input.append(readfiles[i])
+        else:
+            input.append(readfiles[i])
+        if type(input)==str:
+            input=[input] 
+    with open("run_files.txt","w") as f1:
+        for inp in input:
+            f1.write(inp+"\n")
+
+        
    
 def main(): 
     # path='/gpfs/projects/FrenkelGroup/kaif/FDMNES_cal/shape_proj/test_1_100_oblate/'
     xyzinp=glob("input/*.xyz")
     template_dir=config['template_dir']
-    if not os.path.exists("FDMNESinp"):
-           os.mkdir("FDMNESinp")
+    restart=config['restart']
+    if restart == False:
+        if not os.path.exists("FDMNESinp"):
+            os.mkdir("FDMNESinp")
+        else:
+            shutil.rmtree("FDMNESinp")
+            os.mkdir("FDMNESinp")
+        j=0
+        for i in tqdm(range(len(xyzinp)),total=len(xyzinp),desc=f"writing {xyzinp[j].split('/')[-1]}..."):
+            write_FDMNESinp(template_dir,xyzinp[i],config['Absorber'],site=None)  
+            j+=1
+        inp_files=glob("FDMNESinp/*.inp")
+        with open("run_files.txt","w") as f1:
+            for i in range(len(inp_files)):
+                f1.write(inp_files[i]+"\n")
     else:
-           shutil.rmtree("FDMNESinp")
-           os.mkdir("FDMNESinp")
-    j=0
-    for i in tqdm(range(len(xyzinp)),total=len(xyzinp),desc=f"writing {xyzinp[j].split('/')[-1]}..."):
-        write_FDMNESinp(template_dir,xyzinp[i],config['Absorber'],site=None)  
-        j+=1
-    inp_files=glob("FDMNESinp/*.inp")
-    with open("run_files.txt","w") as f1:
-        for i in range(len(inp_files)):
-            f1.write(inp_files[i]+"\n")
+        restart()
 if __name__ == '__main__':
     main()
   
