@@ -1,0 +1,4 @@
+temp_path = "/gpfs/projects/FrenkelGroup/kaif/FDMNES_cal/shape_proj/test_1_100_oblate/"
+foldername = 
+template_dir = "template.inp"
+Absorber = "Pt"
