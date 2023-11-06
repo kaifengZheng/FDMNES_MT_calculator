@@ -1,0 +1,30 @@
+!	Main	indata	file	for	fdmnes
+!	Calculation	on	Pt	cubic	using	the	multiple	scattering	approach	with	convolution.
+!	Calculation	on	all	sites	done	in	one	run.
+Filout
+fdmnes
+
+
+Z_absorber
+78
+Radius
+9
+Green
+Relativism
+Edge
+L3
+Center_abs
+One_run
+Range	!	Energy	range	of	calculation	(eV)
+-3.	0.2	5.	0.25	20.	1.	75.	!	first	energy,	step,	intermediary	energy,	step	...,	last	energy
+
+!	keywords	for	the	convolution
+Convolution
+Check_conv
+Gaussian
+3
+Estart
+-20
+Efermi
+-0.3
+

@@ -52,7 +52,7 @@ def write_FDMNESinp(template_dir,pos_filename,CA,site=None):
         f.write('Molecule')
         f.write("1   1   1   90   90   90")
         for i in range(len(atoms)):
-            f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}")
+            f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}\n")
         f.write('\n')
         f.write("END\n")
 
@@ -84,7 +84,10 @@ def main():
     for i in tqdm(range(len(xyzinp)),total=len(xyzinp),desc=f"writing {xyzinp[j].split('/')[-1]}..."):
         write_FDMNESinp(template_dir,xyzinp[i],config['Absorber'],site=None)  
         j+=1
-    
+    inp_files=glob("FDMNESinp/*.inp")
+    with open("run_files.txt","w") as f1:
+        for i in range(len(inp_files)):
+            f1.write(inp_files[i]+"\n")
 if __name__ == '__main__':
     main()
   
