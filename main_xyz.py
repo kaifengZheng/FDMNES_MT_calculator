@@ -269,10 +269,10 @@ class FDMNES_cal:
 
 
 
-
+            conv_file=glob.glob("*_conv.txt")
                 
-            if os.path.isfile('fdmnes_conv.txt'):
-                with open('fdmnes_conv.txt') as f:
+            if conv_file != []:
+                with open(conv_file[0]) as f:
                     fdmnestxt_conv = f.readlines()
                 js_new = {
                     'fname_fdmnesconvtxt': 'fdmnes_conv.txt',
@@ -323,8 +323,8 @@ def main():
     else:
         run_dir=config['path']
     os.chdir(run_dir)
-    if not os.path.exists("js"):
-           os.mkdir("js")
+    if not os.path.exists("output"):
+           os.mkdir("output")
     #else:
     #       shutil.rmtree("FDMNESinp")
     #       os.mkdir("FDMNESinp")
@@ -343,7 +343,7 @@ def main():
     js_out =FDMNES_cal(config).fdmnes_calculator_mpi()
 
     os.chdir(run_dir)
-    with open(run_dir+'js/js_'+input_file[pathlen:-4]+'.json', 'w') as f:
+    with open(run_dir+"output/"+input_file[pathlen:-4]+'.json', 'w') as f:
         json.dump(js_out, f)
     
 if __name__ == '__main__':
