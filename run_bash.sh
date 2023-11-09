@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#SBATCH --nodes=1
-#SBATCH --time=7:59:59
+#SBATCH --nodes=6
+#SBATCH --time=47:59:59
 #SBATCH --partition=long-96core
 #SBATCH --output=array_test.%N_%a.log
-#SBATCH --job-name=fdmnes_800_2
+#SBATCH --job-name=fdmnes_p_1
 #SBATCH --mail-user=kaifeng.zheng@stonybrook.edu
 #SBATCH --mail-type=ALL
 
@@ -15,7 +15,7 @@ module load  python/3.9.7
 
 ##module load gnu-parallel
 
-NUM_NODES=1
+NUM_NODES=6
 CPU_PER_TASK=96
 CPU_PER_PARTITION=96
 #EMPTY_CPUS=0
@@ -30,7 +30,7 @@ scontrol show hostnames >> hostname
 hostnum=$(cat hostname | wc -l)
 let numcpus=$((NUM_NODES*CPU_PER_PARTITION))
 
-let dividcpus=$((numcpus/CPU_PER_TASK))
+let jobs_once=$((numcpus/CPU_PER_TASK))
 
 # for ((i=0;i<$filenum;i++))
 i=0
@@ -39,6 +39,10 @@ while IFS= read -r line <&3; #add file desciptor to override stdin to prevent co
     if (( $nodeindex>=$NUM_NODES )); then
         let nodeindex=0
     fi
+    if [ $((i%jobs_once)) -eq 0 -a $i -ne 0 ];then
+	wait
+    fi
+
     echo $i 
     echo "using the $nodeindex th node"
     echo "$line"
@@ -54,9 +58,8 @@ while IFS= read -r line <&3; #add file desciptor to override stdin to prevent co
 	#if [ $(((i+1)%dividcpus)) -eq 0 -a $i -ne 0 ];then
         #    wait
         #fi
-	if [ $modu -eq 0 -a $i -ne 0 ]; then
+	if [ $modu -eq 0 ]; then
             (( nodeindex += 1 ))
-	    wait
 	fi
     fi
     ((i++))
