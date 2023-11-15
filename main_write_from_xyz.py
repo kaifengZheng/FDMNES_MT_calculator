@@ -14,6 +14,7 @@ from glob import glob
 import sys
 import toml
 from tqdm import tqdm
+from scipy.spatial.distance import cdist
 
 
 
@@ -49,16 +50,14 @@ def write_FDMNESinp(template_dir,pos_filename,CA,site=None):
         else:
             f.write("absorber\n")
             f.write(f"{site}\n\n")
+        f.write("Radius\n")
+        f.write(f"{np.round(radius_s(coords),1)}\n\n")
         f.write('Molecule\n')
         f.write("1   1   1   90   90   90\n")
         for i in range(len(atoms)):
             f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}\n")
         f.write('\n')
         f.write("END\n")
-def read_json(filename):
-    with open(filename) as f:
-        data = json.load(f)
-    return data
 def read_xyz(filename):
     """
     read xyz file and return the coordinates of atoms
@@ -73,7 +72,12 @@ def read_xyz(filename):
         atoms.append(atom)
         coords.append([float(x),float(y),float(z)])
     return atoms,coords
-
+def radius_s(coordinates):
+    center=np.mean(coordinates,axis=0)
+    r=np.max(cdist(coordinates,[center]))
+    if type(r)==np.ndarray:
+        r=r[0]
+    return r+0.1 #slightly larger than the radius of the sphere
 def write_from_restart():
     readfiles=glob(f"FDMNESinp/*.inp")
     readout=glob(f"output/*.json")
@@ -86,7 +90,6 @@ def write_from_restart():
             data=read_json(f"output/{readfiles[i].split('/')[1].split('.')[0]}.json")
             try:
                 data["mu_conv"]
-                print("pass")
             except:
                 input.append(readfiles[i])
         else:
