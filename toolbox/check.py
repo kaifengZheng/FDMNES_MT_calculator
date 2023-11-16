@@ -19,13 +19,12 @@ def check_files(filename,i):
             data = json.load(f)
         Energy=np.array(data['e_conv'],dtype=float)
         mu=np.array(data['mu_conv'],dtype=float)
-        site=int(filename[i].split("_site_")[1].split('_')[0])
-        n_sites=int(filename[i].split('n_')[1].split('.')[0])
     except:
         os.remove(filename[i])
+        print(f"{particle} is bad")
         delete+=1
         #print(f"{readout[i]} is corrupted and deleted\n")
-        print(f"deleted {delete} corrupted files\n")
+        #print(f"deleted {delete} corrupted files\n")
 
 readout=glob(f"../output/*.json")
 out=[]
@@ -38,17 +37,17 @@ with tqdm(total=len(readout)) as pbar:
         jobs=[executor.submit(check_files,readout,i) for i in range(len(readout))]
         for job in futures.as_completed(jobs):
             pbar.update(1)
-readout=glob(f"../output/*.json")
+#readout=glob(f"../output/*.json")
 
-for i in range(len(readout)):
-    out.append(readout[i].split('/')[2].split('.')[0])
-
-
+#for i in range(len(readout)):
+#    out.append(readout[i].split('/')[2].split('.')[0])
 
 
-readin=glob("../input_pool/*.cif")
-for i in range(len(readin)):
-    namein=readin[i].split('/')[2].split('.')[0]
-    if namein not in out:
-       shutil.copy(readin[i],"../input/")
+
+
+#readin=glob("../input/*.xyz")
+#for i in range(len(readin)):
+#    namein=readin[i].split('/')[2].split('.')[0]
+#    if namein not in out:
+#       shutil.copy(readin[i],"../input/")
 

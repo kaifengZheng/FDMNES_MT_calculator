@@ -58,6 +58,12 @@ def write_FDMNESinp(template_dir,pos_filename,CA,site=None):
             f.write(f"{Element(atoms[i]).Z} {coords[i][0]} {coords[i][1]} {coords[i][2]}\n")
         f.write('\n')
         f.write("END\n")
+
+def read_json(filename):
+    with open(filename) as f:
+        data = json.load(f)
+    return data
+
 def read_xyz(filename):
     """
     read xyz file and return the coordinates of atoms
