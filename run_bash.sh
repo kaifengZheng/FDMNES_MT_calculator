@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --nodes=6
 #SBATCH --time=47:59:59
-#SBATCH --partition=long-96core
+#SBATCH --partition=hbm-long-96core
 #SBATCH --output=array_test.%N_%a.log
 #SBATCH --job-name=fdmnes_p_1
 #SBATCH --mail-user=kaifeng.zheng@stonybrook.edu
@@ -34,7 +34,7 @@ let jobs_once=$((numcpus/CPU_PER_TASK))
 
 # for ((i=0;i<$filenum;i++))
 i=0
-while IFS= read -r line <&3; #add file desciptor to override stdin to prevent conflicts.
+while IFS= read -r line <&3; #add file desciptor to redirect  stdin to prevent conflicts.
   do
     if (( $nodeindex>=$NUM_NODES )); then
         let nodeindex=0

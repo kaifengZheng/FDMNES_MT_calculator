@@ -83,7 +83,7 @@ def radius_s(coordinates):
     r=np.max(cdist(coordinates,[center]))
     if type(r)==np.ndarray:
         r=r[0]
-    return r+0.1 #slightly larger than the radius of the sphere
+    return r+0.5 #slightly larger than the radius of the sphere
 def write_from_restart():
     readfiles=glob(f"FDMNESinp/*.inp")
     readout=glob(f"output/*.json")
