@@ -3,6 +3,7 @@ exe_path='/gpfs/home/kaifzheng/software/parallel_fdmnes'
 scratch_path="/gpfs/scratch/kaifzheng/fdmnes/calculation"
 template_dir='template.inp'
 Absorber = "Pt"
-cleanup= true
-restart= true
+site_absorber=True
+cleanup= false
+restart= false
 
