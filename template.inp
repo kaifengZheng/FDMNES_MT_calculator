@@ -3,7 +3,8 @@
 !	Calculation	on	all	sites	done	in	one	run.
 Filout
 fdmnes
-
+Radius
+11.1
 Green
 Relativism
 Edge

@@ -7,7 +7,7 @@
 #SBATCH --partition=extended-40core
 #SBATCH --output=array_test.%N_%a.log
 #SBATCH --job-name=fdmnes_8_all
-#SBATCH --mail-user=kaifeng.zheng@stonybrook.edu
+#SBATCH --mail-user=
 #SBATCH --mail-type=ALL
 
 module load slurm
@@ -20,14 +20,20 @@ module load gnu-parallel
 
 export I_MPI_HYDRA_BOOTSTRAP=ssh
 export JOBS_PER_NODE=$(($SLURM_CPUS_ON_NODE / $SLURM_CPUS_PER_TASK))
-export WDIR=/gpfs/projects/FrenkelGroup/kaif/FDMNES_cal/Pt_shape_proj_7/particle_one_site/P_8_all
+export WDIR=/gpfs/projects/
 cd $WDIR
 echo "============================================"
 echo "SLURM_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK"
 echo "JOBS_PER_NODE=$JOBS_PER_NODE"
 echo "============================================"
 
+
+
+echo "writing FDMNES input files..."
+python main_write_from_xyz.py
 #EMPTY_CPUS=0
+
+echo "write bash command file..."
 bash run_bash_write.sh $SLURM_CPUS_PER_TASK
 #$SLURM_CPUS_PER_TASK
 wait

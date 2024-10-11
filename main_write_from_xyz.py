@@ -82,8 +82,8 @@ def write_FDMNESinp(template_dir,pos_filename,CA,site=None,symmetry=False):
                 f.write('\n\n')
                 f.write("Absorber\n")
                 f.write(f"{unique_index[j]+1}\n\n")
-                f.write("Radius\n")
-                f.write(f"{np.round(radius_s(coords),1)}\n\n")
+                # f.write("Radius\n")
+                # f.write(f"{np.round(radius_s(coords),1)}\n\n")
                 f.write('Molecule\n')
                 f.write("1   1   1   90   90   90\n")
                 for i in range(len(atoms)):
