@@ -39,5 +39,5 @@ chmod 777 start_bash.sh
 ## 4. output
 The outputs are stored in a self-created Output folder in JSON format.
 
-![plot](https://github.com/kaifengZheng/FDMNES_MT_calculator/gnu_parallel_mpi_codes/pics/workflow.png)
+![plot](https://github.com/kaifengZheng/FDMNES_MT_calculator/blob/distortion/gnu_parallel_mpi_codes/pics/workflow.png)
   
