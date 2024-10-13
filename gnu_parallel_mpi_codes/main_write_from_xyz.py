@@ -29,7 +29,6 @@ from scipy.spatial.distance import cdist
 
 #print(ind)
 config = toml.load('config.toml')
-#def FDMNES4writitn()
 
 def write_FDMNESinp(template_dir,pos_filename,CA,site=None):
     """
@@ -104,7 +103,8 @@ def write_from_restart():
         if type(input)==str:
             input=[input]
     #print(input)
-    print(out)
+    print(input)
+    print(f"need to run {len(input)} calculations!")
     print(readfiles[i].split('/')[1].split('.')[0])
     with open("run_files.txt","w") as f1:
         for inp in input:
